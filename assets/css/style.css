@@ -1,0 +1,33 @@
+#player1Div, #player2Div {
+    height: 150px;
+    width: 150px;
+}
+
+#player1Div img {
+    width: 100%
+}
+
+#player2Div img {
+    width: 100%
+}
+
+#rock, #paper, #scissors {
+    height: 75px;
+    width: 75px;
+    margin: 0 10px;
+}
+
+#rock img {
+    height: 75px;
+    width: 75px;
+}
+
+#paper img {
+    height: 75px;
+    width: 75px;
+}
+
+#scissors img{
+    height: 75px;
+    width: 75px;
+}

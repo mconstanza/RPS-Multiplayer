@@ -16,32 +16,149 @@
  var players;
  var player1Name;
  var player2Name;
+ var gameStarted = false;
+ var player1Choice;
+ var player2Choice;
+ var wins = 0;
+ var turns = 0;
 
 // Database Snapshots ////////////////////////////////////////////
+
+var player1Data = database.ref('/players/1');
+var player2Data = database.ref('/players/2');
 
 // Player 1 Name Changes
 database.ref('/players/1/name').on('value', function(snapshot){
 
     player1Name = snapshot.val();
     console.log(player1Name);
-})
+});
 
 // Player 2 Name Changes
 database.ref('/players/2/name').on('value', function(snapshot){
 
     player2Name = snapshot.val();
     console.log(player2Name);
-})
+});
 
  // Game Variables ///////////////////////////////////////////////////
  var gameStarted = false;
 
 // Functions /////////////
 
+function variableReset(){
+    gameStarted = false;
+    player1Data.child('choice').remove();
+    player2Data.child('choice').remove();
+};
+
+function winCheck(){
+    // rock
+    if (player1Choice == 0){
+        switch (player2Choice){
+            case 0:
+                // tie game
+                console.log('Tie Game!')
+                variableReset();
+                break;
+            case 1:
+                // player 2 wins
+                console.log('player 2 wins!')
+                variableReset();
+                break;
+            case 2:
+                // player 1 wins
+                console.log('player 1 wins!')
+                variableReset();
+                break;
+        };
+    // paper
+    }else if (player1Choice == 1){
+            switch (player2Choice){
+                case 0:
+                    // player 1 wins
+                    console.log('player 1 wins!')
+                    variableReset();
+                    break;
+                case 1:
+                    // tie game
+                    console.log('Tie Game!')
+                    variableReset();
+                    break;
+                case 2:
+                    // player 2 wins
+                    console.log('player 2 wins!')
+                    variableReset();
+                break;
+            }
+    // scissors
+    }else if (player1Choice == 2){
+        switch (player2Choice){
+            case 0:
+                // player 2 wins
+                console.log('player 2 wins!')
+                variableReset();
+                break;
+            case 1:
+                // player 1 wins
+                console.log('player 1 wins!')
+                variableReset();
+                break;
+            case 2:
+                // tie game
+                console.log('Tie Game!')
+                variableReset();
+                break;
+        }
+    }
+
+
+};
+
 function playGame(){
-    // On Player Disconnect
-    console.log('database ref child: ' + database.ref('/players').child(userID))
-    database.ref('/players').child(userID).onDisconnect().remove()
+
+    gameStarted = true;
+
+    // Rock, paper, scissors buttons
+
+    $rock.on('click', function(){
+        database.ref('/players').child(userID).update({
+            choice: 0
+        });
+        console.log('Rock!')
+        console.log('player ' + userID + ' choice: rock')
+
+    });
+
+    $paper.on('click', function(){
+        database.ref('/players').child(userID).update({
+            choice: 1
+        });
+        console.log(player1Choice)
+
+    });
+
+    $scissors.on('click', function(){
+        database.ref('/players').child(userID).update({
+            choice: 2
+        });
+
+    });
+
+    database.ref('/players/1/choice').on('value', function(snapshot){
+        player1Choice = snapshot.val();
+        winCheck()
+    })
+
+    database.ref('/players/2/choice').on('value', function(snapshot){
+        player2Choice = snapshot.val();
+        winCheck()
+    })
+
+
+    // On Player Disconnect - remove that player's data
+    database.ref('/players').child(userID).onDisconnect().remove();
+
 }
 
 // jQuery ////////////////////////////////////////////////////////////
@@ -50,6 +167,9 @@ function playGame(){
      $playButton = $('#playButton');
      $nameInput = $('#nameInput');
      $addPlayerForm = $('#addPlayerForm');
+     $rock = $('#rock');
+     $paper = $('#paper');
+     $scissors = $('#scissors');
 
 
      // Play Game Button
@@ -88,7 +208,7 @@ function playGame(){
                 user: userID,
                 wins: 0,
                 losses: 0
-            })
+            });
         }
         // reset form field
         $nameInput.val("");
@@ -97,5 +217,8 @@ function playGame(){
         // prevent page refresh
         return false;
     });
+
+
+
 
  }); // end of jQuery
