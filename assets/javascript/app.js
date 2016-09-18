@@ -42,12 +42,53 @@ database.ref('/players/2/name').on('value', function(snapshot){
 });
 
  // Game Variables ///////////////////////////////////////////////////
- var gameStarted = false;
+
 
 // Functions /////////////
 
+function displayChoice(player, choice){
+
+    if (player == 'player1'){
+        // empty the divs
+        $player1Div.empty();
+
+        switch(choice){
+            case 0:
+                $player1Div.append($rockImg);
+                break;
+
+            case 1:
+                $player1Div.append($paperImg);
+                break;
+
+            case 2:
+                $player1Div.append($scissorsImg);
+                break;
+        }
+
+    }else if (player == 'player2'){
+        $player2Div.empty();
+
+        switch(choice){
+            case 0:
+                $player2Div.append($rockImg);
+                break;
+
+            case 1:
+                $player2Div.append($paperImg);
+                break;
+
+            case 2:
+                $player2Div.append($scissorsImg);
+                break;
+
+        }
+    }
+
+};
+
 function variableReset(){
-    gameStarted = false;
+
     player1Data.child('choice').remove();
     player2Data.child('choice').remove();
 };
@@ -59,17 +100,17 @@ function winCheck(){
             case 0:
                 // tie game
                 console.log('Tie Game!')
-                variableReset();
+                //variableReset();
                 break;
             case 1:
                 // player 2 wins
                 console.log('player 2 wins!')
-                variableReset();
+                //variableReset();
                 break;
             case 2:
                 // player 1 wins
                 console.log('player 1 wins!')
-                variableReset();
+                //variableReset();
                 break;
         };
     // paper
@@ -78,17 +119,17 @@ function winCheck(){
                 case 0:
                     // player 1 wins
                     console.log('player 1 wins!')
-                    variableReset();
+                    //variableReset();
                     break;
                 case 1:
                     // tie game
                     console.log('Tie Game!')
-                    variableReset();
+                    //variableReset();
                     break;
                 case 2:
                     // player 2 wins
                     console.log('player 2 wins!')
-                    variableReset();
+                    //variableReset();
                 break;
             }
     // scissors
@@ -97,27 +138,30 @@ function winCheck(){
             case 0:
                 // player 2 wins
                 console.log('player 2 wins!')
-                variableReset();
+                //variableReset();
                 break;
             case 1:
                 // player 1 wins
                 console.log('player 1 wins!')
-                variableReset();
+                //variableReset();
                 break;
             case 2:
                 // tie game
                 console.log('Tie Game!')
-                variableReset();
+                //variableReset();
                 break;
         }
     }
-
-
+    $player1Div.show();
+    $player2Div.show();
 };
 
 function playGame(){
+    // hide player divs so they can't see other player's choice
 
-    gameStarted = true;
+    $player1Div.hide();
+    $player2Div.hide();
+
 
     // Rock, paper, scissors buttons
 
@@ -128,6 +172,7 @@ function playGame(){
         console.log('Rock!')
         console.log('player ' + userID + ' choice: rock')
 
+
     });
 
     $paper.on('click', function(){
@@ -135,6 +180,7 @@ function playGame(){
             choice: 1
         });
         console.log(player1Choice)
+
 
     });
 
@@ -145,15 +191,19 @@ function playGame(){
 
     });
 
+
+    // listen for changes to player choices
     database.ref('/players/1/choice').on('value', function(snapshot){
         player1Choice = snapshot.val();
+        displayChoice('player1', player1Choice);
         winCheck()
-    })
+    });
 
     database.ref('/players/2/choice').on('value', function(snapshot){
         player2Choice = snapshot.val();
+        displayChoice('player2', player2Choice);
         winCheck()
-    })
+    });
 
 
     // On Player Disconnect - remove that player's data
@@ -167,14 +217,34 @@ function playGame(){
      $playButton = $('#playButton');
      $nameInput = $('#nameInput');
      $addPlayerForm = $('#addPlayerForm');
+
+     $player1Div = $('#player1Div');
+     $player2Div = $('#player2Div');
+
      $rock = $('#rock');
      $paper = $('#paper');
      $scissors = $('#scissors');
+
+     $rockImg = $('<img>');
+     $rockImg.attr('src', 'assets/images/rock-paper-scissors-rock-icon.png')
+     $rockImg.attr('id', 'rockImg')
+
+     $paperImg = $('<img>');
+     $paperImg.attr('src', 'assets/images/rock-paper-scissors-paper-icon.png')
+     $paperImg.attr('id', 'paperImg')
+
+     $scissorsImg = $('<img>');
+     $scissorsImg.attr('src', 'assets/images/rock-paper-scissors-scissors-icon.png')
+     $scissorsImg.attr('id', 'scissorsImg')
 
 
      // Play Game Button
      $playButton.on('click', function(){
 
+        gameStarted = true;
+
+        $playButton.hide();
+        $addPlayerForm.hide();
         // set name to value in field
         var name = $nameInput.val().trim();
 
