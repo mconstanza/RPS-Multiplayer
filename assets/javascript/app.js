@@ -55,14 +55,17 @@ function displayChoice(player, choice){
         switch(choice){
             case 0:
                 $player1Div.append($rockImg);
+
                 break;
 
             case 1:
                 $player1Div.append($paperImg);
+
                 break;
 
             case 2:
                 $player1Div.append($scissorsImg);
+
                 break;
         }
 
@@ -99,16 +102,22 @@ function winCheck(){
         switch (player2Choice){
             case 0:
                 // tie game
+                $player1Div.show();
+                $player2Div.show();
                 console.log('Tie Game!')
                 //variableReset();
                 break;
             case 1:
                 // player 2 wins
+                $player1Div.show();
+                $player2Div.show();
                 console.log('player 2 wins!')
                 //variableReset();
                 break;
             case 2:
                 // player 1 wins
+                $player1Div.show();
+                $player2Div.show();
                 console.log('player 1 wins!')
                 //variableReset();
                 break;
@@ -118,16 +127,22 @@ function winCheck(){
             switch (player2Choice){
                 case 0:
                     // player 1 wins
+                    $player1Div.show();
+                    $player2Div.show();
                     console.log('player 1 wins!')
                     //variableReset();
                     break;
                 case 1:
                     // tie game
+                    $player1Div.show();
+                    $player2Div.show();
                     console.log('Tie Game!')
                     //variableReset();
                     break;
                 case 2:
                     // player 2 wins
+                    $player1Div.show();
+                    $player2Div.show();
                     console.log('player 2 wins!')
                     //variableReset();
                 break;
@@ -137,23 +152,28 @@ function winCheck(){
         switch (player2Choice){
             case 0:
                 // player 2 wins
+                $player1Div.show();
+                $player2Div.show();
                 console.log('player 2 wins!')
                 //variableReset();
                 break;
             case 1:
                 // player 1 wins
+                $player1Div.show();
+                $player2Div.show();
                 console.log('player 1 wins!')
                 //variableReset();
                 break;
             case 2:
                 // tie game
+                $player1Div.show();
+                $player2Div.show();
                 console.log('Tie Game!')
                 //variableReset();
                 break;
         }
     }
-    $player1Div.show();
-    $player2Div.show();
+
 };
 
 function playGame(){
@@ -196,12 +216,18 @@ function playGame(){
     database.ref('/players/1/choice').on('value', function(snapshot){
         player1Choice = snapshot.val();
         displayChoice('player1', player1Choice);
+        if (userID == 1){
+            $player1Div.show();
+        }
         winCheck()
     });
 
     database.ref('/players/2/choice').on('value', function(snapshot){
         player2Choice = snapshot.val();
         displayChoice('player2', player2Choice);
+        if (userID == 2){
+            $player2Div.show();
+        }
         winCheck()
     });
 
