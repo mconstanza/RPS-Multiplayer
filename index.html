@@ -28,27 +28,50 @@
 
 	<div class='container'>
 		<div class='row'>
-			<div class='col-md-8' id='gameCol'>
+			<div class='col-md-8 text-center' id='gameCol'>
 
 				<div class='row text-center'>
-					<div class='col-md-5 text-center' id='player1Div'>
+					<div class='col-md-5 text-center'>
+
+						<!-- Box with player info -->
+						<div id='player1Info' class='text-center'>
+							<!-- displays rock, paper, scissors -->
+							<div id='player1Choice' class='text-center'>
+
+							</div>
+
+							<div  id= 'player1Name' class='text-center'>
+
+							</div>
+						</div>
 
 					</div>
-					<div class='col-md-2 text-center'>
+					<div class='col-md-2 text-center' id="emptyPlayerCol">
 						<!-- Empty Space -->
 					</div>
-					<div class='col-md-5 text-center' id='player2Div'>
+					<div class='col-md-5 text-center'>
+						<!-- Box with player info -->
+						<div id='player2Info' class='text-center'>
+							<!-- displays rock, paper, scissors -->
+							<div id='player2Choice' class='text-center'>
 
+							</div>
+
+							<div  id= 'player2Name' class='text-center'>
+
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class ='row'>
+
+				<div class ='row' id='moveSelectRow'>
 					<div class ='col-md-12 text-center' id ='moveSelect'>
 						<button id='rock' ><img src='assets/images/rock-paper-scissors-rock-icon.png' /></button>
 						<button id='paper' ><img src='assets/images/rock-paper-scissors-paper-icon.png' /></button>
 						<button id='scissors' ><img src='assets/images/rock-paper-scissors-scissors-icon.png' /></button>
 					</div>
 				</div>
-				
+
 				<div id='addPlayerForm' class='input-group'>
 					<span class='input-group-addon' id='name-addon'>Name: </span>
 					<input type='text' id='nameInput' class='form-control' aria-describedby='name-addon' />

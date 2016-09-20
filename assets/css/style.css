@@ -1,15 +1,34 @@
-#player1Div, #player2Div {
-    height: 150px;
-    width: 150px;
+.row {
+    float: none;
 }
 
-#player1Div img {
-    width: 100%
+#emptyPlayerCol{
+    /*width: 33%;*/
 }
 
-#player2Div img {
-    width: 100%
+#player1Info, #player2Info{
+    height: 250px;
+    width: 100%;
+    border: 1px solid black;
+
 }
+#player1Choice, #player2Choice {
+    width: 100%;
+    height: 230px;
+}
+
+#player1Choice img {
+    width: 70%;
+}
+
+#player2Choice img {
+    width: 70%;
+}
+
+#moveSelectRow {
+    margin :5% 0;
+}
+
 
 #rock, #paper, #scissors {
     height: 75px;

@@ -15,8 +15,15 @@ $(document).ready(function(){
 
 
     // Player Displays
-    var $player1Div = $('#player1Div');
-    var $player2Div = $('#player2Div');
+
+    var $player1InfoDiv = $('#player1Info');
+    var $player2InfoDiv = $('#player2Info');
+
+    var $player1Choice = $('#player1Choice');
+    var $player2Choice = $('#player2Choice');
+
+    var $player1Name = $('#player1Name');
+    var $player2Name = $('#player2Name');
 
     var $rock = $('#rock');
     var $paper = $('#paper');
@@ -35,38 +42,50 @@ $(document).ready(function(){
     $scissorsImg.attr('id', 'scissorsImg')
 
     // Initialize Firebase
-     var config = {
+    var config = {
        apiKey: "AIzaSyDTDDqqoNnWuCDCf6aQGpo_1UF5NqWE9oA",
        authDomain: "rps-multiplayer-6b3c9.firebaseapp.com",
        databaseURL: "https://rps-multiplayer-6b3c9.firebaseio.com",
        storageBucket: "rps-multiplayer-6b3c9.appspot.com",
        messagingSenderId: "944278702942"
-     };
-     firebase.initializeApp(config);
+    };
 
-     var database = firebase.database();
+    firebase.initializeApp(config);
 
-     var players;
-     var playerName;
-     var player1Name;
-     var player2Name;
-     var gameStarted = false;
-     var player1Choice;
-     var player2Choice;
-     var wins = 0;
-     var turns = 0;
-     var userID =0;
+    var database = firebase.database();
+
+    var players;
+    var playerName;
+    var player1Name;
+    var player2Name;
+    var gameStarted = false;
+    var player1Choice;
+    var player2Choice;
+    var wins = 0;
+    var turns = 0;
+    var userID =0;
 
     // Database Snapshots ////////////////////////////////////////////
 
     var player1Data = database.ref('/players/1');
     var player2Data = database.ref('/players/2');
 
+    player1Data.set({
+        name: 'Waiting for player'
+    });
+
+    player2Data.set({
+        name: 'Waiting for player'
+    });
+
     // Player 1 Name Changes
     database.ref('/players/1/name').on('value', function(snapshot){
 
         player1Name = snapshot.val();
         console.log(player1Name);
+
+        // write to player1Info div
+        $player1Name.text(player1Name)
     });
 
     // Player 2 Name Changes
@@ -74,10 +93,15 @@ $(document).ready(function(){
 
         player2Name = snapshot.val();
         console.log(player2Name);
+
+        // write to player2Info div
+        $player2Name.text(player2Name)
     });
 
     // disconnect
-    database.ref('/players').child(userID).onDisconnect().remove();
+    database.ref('/players').child(userID).onDisconnect().set({
+        name: 'Waiting for player'
+    });
 
      // Game Variables ///////////////////////////////////////////////////
 
@@ -88,39 +112,39 @@ $(document).ready(function(){
 
         if (player == 'player1'){
             // empty the divs
-            $player1Div.empty();
+            $player1Choice.empty();
 
             switch(choice){
                 case 0:
-                    $player1Div.append($rockImg);
+                    $player1Choice.append($rockImg);
 
                     break;
 
                 case 1:
-                    $player1Div.append($paperImg);
+                    $player1Choice.append($paperImg);
 
                     break;
 
                 case 2:
-                    $player1Div.append($scissorsImg);
+                    $player1Choice.append($scissorsImg);
 
                     break;
             }
 
         }else if (player == 'player2'){
-            $player2Div.empty();
+            $player2Choice.empty();
 
             switch(choice){
                 case 0:
-                    $player2Div.append($rockImg);
+                    $player2Choice.append($rockImg);
                     break;
 
                 case 1:
-                    $player2Div.append($paperImg);
+                    $player2Choice.append($paperImg);
                     break;
 
                 case 2:
-                    $player2Div.append($scissorsImg);
+                    $player2Choice.append($scissorsImg);
                     break;
 
             }
@@ -140,22 +164,22 @@ $(document).ready(function(){
             switch (player2Choice){
                 case 0:
                     // tie game
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('Tie Game!')
                     //variableReset();
                     break;
                 case 1:
                     // player 2 wins
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('player 2 wins!')
                     //variableReset();
                     break;
                 case 2:
                     // player 1 wins
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('player 1 wins!')
                     //variableReset();
                     break;
@@ -165,22 +189,22 @@ $(document).ready(function(){
                 switch (player2Choice){
                     case 0:
                         // player 1 wins
-                        $player1Div.show();
-                        $player2Div.show();
+                        $player1Choice.show();
+                        $player2Choice.show();
                         console.log('player 1 wins!')
                         //variableReset();
                         break;
                     case 1:
                         // tie game
-                        $player1Div.show();
-                        $player2Div.show();
+                        $player1Choice.show();
+                        $player2Choice.show();
                         console.log('Tie Game!')
                         //variableReset();
                         break;
                     case 2:
                         // player 2 wins
-                        $player1Div.show();
-                        $player2Div.show();
+                        $player1Choice.show();
+                        $player2Choice.show();
                         console.log('player 2 wins!')
                         //variableReset();
                     break;
@@ -190,22 +214,22 @@ $(document).ready(function(){
             switch (player2Choice){
                 case 0:
                     // player 2 wins
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('player 2 wins!')
                     //variableReset();
                     break;
                 case 1:
                     // player 1 wins
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('player 1 wins!')
                     //variableReset();
                     break;
                 case 2:
                     // tie game
-                    $player1Div.show();
-                    $player2Div.show();
+                    $player1Choice.show();
+                    $player2Choice.show();
                     console.log('Tie Game!')
                     //variableReset();
                     break;
@@ -217,9 +241,8 @@ $(document).ready(function(){
     function playGame(){
         // hide player divs so they can't see other player's choice
 
-        $player1Div.hide();
-        $player2Div.hide();
-
+        $player1Choice.hide();
+        $player2Choice.hide();
 
         // Rock, paper, scissors buttons
 
@@ -255,7 +278,7 @@ $(document).ready(function(){
             player1Choice = snapshot.val();
             displayChoice('player1', player1Choice);
             if (userID == 1){
-                $player1Div.show();
+                $player1Choice.show();
             }
             winCheck()
         });
@@ -264,7 +287,7 @@ $(document).ready(function(){
             player2Choice = snapshot.val();
             displayChoice('player2', player2Choice);
             if (userID == 2){
-                $player2Div.show();
+                $player2Choice.show();
             }
             winCheck()
         });
@@ -287,11 +310,11 @@ $(document).ready(function(){
         playerName = name;
 
         // if player1 and 2 both exist, do nothing
-        if (player1Name && player2Name){
+        if (player1Name != 'Waiting for player' && player2Name != 'Waiting for player'){
             return false;
 
         // if player1 exists, add player 2
-        }else if (player1Name){
+    }else if (player1Name != 'Waiting for player'){
             console.log('adding player 2')
             userID = 2;
             console.log('user: ' + userID)
@@ -327,7 +350,13 @@ $(document).ready(function(){
     });
 
     // Chat
-    database.ref('/chat').on('child_added', function(snapshot){
+    database.ref('/players/1/chat').on('child_added', function(snapshot){
+
+        $chatDisplay.append('<br>' + snapshot.val().message);
+
+    })
+
+    database.ref('/players/2/chat').on('child_added', function(snapshot){
 
         $chatDisplay.append('<br>' + snapshot.val().message);
 
@@ -340,10 +369,12 @@ $(document).ready(function(){
 
         var message = playerName + ': ' + input
 
-        database.ref('/chat').push({
+        database.ref('/players/').child(userID).child('chat').push({
 
             message: message
         });
+
+        $chatInput.val('');
 
     })
 
