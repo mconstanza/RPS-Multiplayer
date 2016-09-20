@@ -1,271 +1,282 @@
 // RPS - Multiplayer
 // Rock, Paper, Scissors made using Javascript and firebase
 
-// Initialize Firebase
- var config = {
-   apiKey: "AIzaSyDTDDqqoNnWuCDCf6aQGpo_1UF5NqWE9oA",
-   authDomain: "rps-multiplayer-6b3c9.firebaseapp.com",
-   databaseURL: "https://rps-multiplayer-6b3c9.firebaseio.com",
-   storageBucket: "rps-multiplayer-6b3c9.appspot.com",
-   messagingSenderId: "944278702942"
- };
- firebase.initializeApp(config);
+// jQuery ////////////////////////////////////////////////////////////
+$(document).ready(function(){
+    // jQuery Elements //////////////////////////////////////////////
+    var $playButton = $('#playButton');
+    var $nameInput = $('#nameInput');
+    var $addPlayerForm = $('#addPlayerForm');
 
- var database = firebase.database();
-
- var players;
- var player1Name;
- var player2Name;
- var gameStarted = false;
- var player1Choice;
- var player2Choice;
- var wins = 0;
- var turns = 0;
-
-// Database Snapshots ////////////////////////////////////////////
-
-var player1Data = database.ref('/players/1');
-var player2Data = database.ref('/players/2');
-
-// Player 1 Name Changes
-database.ref('/players/1/name').on('value', function(snapshot){
-
-    player1Name = snapshot.val();
-    console.log(player1Name);
-});
-
-// Player 2 Name Changes
-database.ref('/players/2/name').on('value', function(snapshot){
-
-    player2Name = snapshot.val();
-    console.log(player2Name);
-});
-
- // Game Variables ///////////////////////////////////////////////////
+    // Chat
+    var $chatDisplay = $('#chatDisplay');
+    var $chatInput = $('#chatInput');
+    var $chatButton = $('#chatButton');
 
 
-// Functions /////////////
+    // Player Displays
+    var $player1Div = $('#player1Div');
+    var $player2Div = $('#player2Div');
 
-function displayChoice(player, choice){
+    var $rock = $('#rock');
+    var $paper = $('#paper');
+    var $scissors = $('#scissors');
 
-    if (player == 'player1'){
-        // empty the divs
-        $player1Div.empty();
+    var $rockImg = $('<img>');
+    $rockImg.attr('src', 'assets/images/rock-paper-scissors-rock-icon.png')
+    $rockImg.attr('id', 'rockImg')
 
-        switch(choice){
-            case 0:
-                $player1Div.append($rockImg);
+    var $paperImg = $('<img>');
+    $paperImg.attr('src', 'assets/images/rock-paper-scissors-paper-icon.png')
+    $paperImg.attr('id', 'paperImg')
 
-                break;
+    var $scissorsImg = $('<img>');
+    $scissorsImg.attr('src', 'assets/images/rock-paper-scissors-scissors-icon.png')
+    $scissorsImg.attr('id', 'scissorsImg')
 
-            case 1:
-                $player1Div.append($paperImg);
+    // Initialize Firebase
+     var config = {
+       apiKey: "AIzaSyDTDDqqoNnWuCDCf6aQGpo_1UF5NqWE9oA",
+       authDomain: "rps-multiplayer-6b3c9.firebaseapp.com",
+       databaseURL: "https://rps-multiplayer-6b3c9.firebaseio.com",
+       storageBucket: "rps-multiplayer-6b3c9.appspot.com",
+       messagingSenderId: "944278702942"
+     };
+     firebase.initializeApp(config);
 
-                break;
+     var database = firebase.database();
 
-            case 2:
-                $player1Div.append($scissorsImg);
+     var players;
+     var playerName;
+     var player1Name;
+     var player2Name;
+     var gameStarted = false;
+     var player1Choice;
+     var player2Choice;
+     var wins = 0;
+     var turns = 0;
+     var userID =0;
 
-                break;
+    // Database Snapshots ////////////////////////////////////////////
+
+    var player1Data = database.ref('/players/1');
+    var player2Data = database.ref('/players/2');
+
+    // Player 1 Name Changes
+    database.ref('/players/1/name').on('value', function(snapshot){
+
+        player1Name = snapshot.val();
+        console.log(player1Name);
+    });
+
+    // Player 2 Name Changes
+    database.ref('/players/2/name').on('value', function(snapshot){
+
+        player2Name = snapshot.val();
+        console.log(player2Name);
+    });
+
+    // disconnect
+    database.ref('/players').child(userID).onDisconnect().remove();
+
+     // Game Variables ///////////////////////////////////////////////////
+
+
+    // Functions /////////////
+
+    function displayChoice(player, choice){
+
+        if (player == 'player1'){
+            // empty the divs
+            $player1Div.empty();
+
+            switch(choice){
+                case 0:
+                    $player1Div.append($rockImg);
+
+                    break;
+
+                case 1:
+                    $player1Div.append($paperImg);
+
+                    break;
+
+                case 2:
+                    $player1Div.append($scissorsImg);
+
+                    break;
+            }
+
+        }else if (player == 'player2'){
+            $player2Div.empty();
+
+            switch(choice){
+                case 0:
+                    $player2Div.append($rockImg);
+                    break;
+
+                case 1:
+                    $player2Div.append($paperImg);
+                    break;
+
+                case 2:
+                    $player2Div.append($scissorsImg);
+                    break;
+
+            }
         }
 
-    }else if (player == 'player2'){
-        $player2Div.empty();
+    };
 
-        switch(choice){
-            case 0:
-                $player2Div.append($rockImg);
-                break;
+    function variableReset(){
 
-            case 1:
-                $player2Div.append($paperImg);
-                break;
+        player1Data.child('choice').remove();
+        player2Data.child('choice').remove();
+    };
 
-            case 2:
-                $player2Div.append($scissorsImg);
-                break;
-
-        }
-    }
-
-};
-
-function variableReset(){
-
-    player1Data.child('choice').remove();
-    player2Data.child('choice').remove();
-};
-
-function winCheck(){
-    // rock
-    if (player1Choice == 0){
-        switch (player2Choice){
-            case 0:
-                // tie game
-                $player1Div.show();
-                $player2Div.show();
-                console.log('Tie Game!')
-                //variableReset();
-                break;
-            case 1:
-                // player 2 wins
-                $player1Div.show();
-                $player2Div.show();
-                console.log('player 2 wins!')
-                //variableReset();
-                break;
-            case 2:
-                // player 1 wins
-                $player1Div.show();
-                $player2Div.show();
-                console.log('player 1 wins!')
-                //variableReset();
-                break;
-        };
-    // paper
-    }else if (player1Choice == 1){
+    function winCheck(){
+        // rock
+        if (player1Choice == 0){
             switch (player2Choice){
                 case 0:
-                    // player 1 wins
-                    $player1Div.show();
-                    $player2Div.show();
-                    console.log('player 1 wins!')
-                    //variableReset();
-                    break;
-                case 1:
                     // tie game
                     $player1Div.show();
                     $player2Div.show();
                     console.log('Tie Game!')
                     //variableReset();
                     break;
-                case 2:
+                case 1:
                     // player 2 wins
                     $player1Div.show();
                     $player2Div.show();
                     console.log('player 2 wins!')
                     //variableReset();
-                break;
+                    break;
+                case 2:
+                    // player 1 wins
+                    $player1Div.show();
+                    $player2Div.show();
+                    console.log('player 1 wins!')
+                    //variableReset();
+                    break;
+            };
+        // paper
+        }else if (player1Choice == 1){
+                switch (player2Choice){
+                    case 0:
+                        // player 1 wins
+                        $player1Div.show();
+                        $player2Div.show();
+                        console.log('player 1 wins!')
+                        //variableReset();
+                        break;
+                    case 1:
+                        // tie game
+                        $player1Div.show();
+                        $player2Div.show();
+                        console.log('Tie Game!')
+                        //variableReset();
+                        break;
+                    case 2:
+                        // player 2 wins
+                        $player1Div.show();
+                        $player2Div.show();
+                        console.log('player 2 wins!')
+                        //variableReset();
+                    break;
+                }
+        // scissors
+        }else if (player1Choice == 2){
+            switch (player2Choice){
+                case 0:
+                    // player 2 wins
+                    $player1Div.show();
+                    $player2Div.show();
+                    console.log('player 2 wins!')
+                    //variableReset();
+                    break;
+                case 1:
+                    // player 1 wins
+                    $player1Div.show();
+                    $player2Div.show();
+                    console.log('player 1 wins!')
+                    //variableReset();
+                    break;
+                case 2:
+                    // tie game
+                    $player1Div.show();
+                    $player2Div.show();
+                    console.log('Tie Game!')
+                    //variableReset();
+                    break;
             }
-    // scissors
-    }else if (player1Choice == 2){
-        switch (player2Choice){
-            case 0:
-                // player 2 wins
-                $player1Div.show();
-                $player2Div.show();
-                console.log('player 2 wins!')
-                //variableReset();
-                break;
-            case 1:
-                // player 1 wins
-                $player1Div.show();
-                $player2Div.show();
-                console.log('player 1 wins!')
-                //variableReset();
-                break;
-            case 2:
-                // tie game
-                $player1Div.show();
-                $player2Div.show();
-                console.log('Tie Game!')
-                //variableReset();
-                break;
         }
+
+    };
+
+    function playGame(){
+        // hide player divs so they can't see other player's choice
+
+        $player1Div.hide();
+        $player2Div.hide();
+
+
+        // Rock, paper, scissors buttons
+
+        $rock.on('click', function(){
+            database.ref('/players').child(userID).update({
+                choice: 0
+            });
+            console.log('Rock!')
+            console.log('player ' + userID + ' choice: rock')
+
+
+        });
+
+        $paper.on('click', function(){
+            database.ref('/players').child(userID).update({
+                choice: 1
+            });
+            console.log(player1Choice)
+
+
+        });
+
+        $scissors.on('click', function(){
+            database.ref('/players').child(userID).update({
+                choice: 2
+            });
+
+        });
+
+
+        // listen for changes to player choices
+        database.ref('/players/1/choice').on('value', function(snapshot){
+            player1Choice = snapshot.val();
+            displayChoice('player1', player1Choice);
+            if (userID == 1){
+                $player1Div.show();
+            }
+            winCheck()
+        });
+
+        database.ref('/players/2/choice').on('value', function(snapshot){
+            player2Choice = snapshot.val();
+            displayChoice('player2', player2Choice);
+            if (userID == 2){
+                $player2Div.show();
+            }
+            winCheck()
+        });
+
+
+        // On Player Disconnect - remove that player's data
+        database.ref('/players').child(userID).onDisconnect().remove();
+
     }
 
-};
-
-function playGame(){
-    // hide player divs so they can't see other player's choice
-
-    $player1Div.hide();
-    $player2Div.hide();
-
-
-    // Rock, paper, scissors buttons
-
-    $rock.on('click', function(){
-        database.ref('/players').child(userID).update({
-            choice: 0
-        });
-        console.log('Rock!')
-        console.log('player ' + userID + ' choice: rock')
-
-
-    });
-
-    $paper.on('click', function(){
-        database.ref('/players').child(userID).update({
-            choice: 1
-        });
-        console.log(player1Choice)
-
-
-    });
-
-    $scissors.on('click', function(){
-        database.ref('/players').child(userID).update({
-            choice: 2
-        });
-
-    });
-
-
-    // listen for changes to player choices
-    database.ref('/players/1/choice').on('value', function(snapshot){
-        player1Choice = snapshot.val();
-        displayChoice('player1', player1Choice);
-        if (userID == 1){
-            $player1Div.show();
-        }
-        winCheck()
-    });
-
-    database.ref('/players/2/choice').on('value', function(snapshot){
-        player2Choice = snapshot.val();
-        displayChoice('player2', player2Choice);
-        if (userID == 2){
-            $player2Div.show();
-        }
-        winCheck()
-    });
-
-
-    // On Player Disconnect - remove that player's data
-    database.ref('/players').child(userID).onDisconnect().remove();
-
-}
-
-// jQuery ////////////////////////////////////////////////////////////
- $(document).ready(function(){
-     // jQuery Elements //////////////////////////////////////////////
-     $playButton = $('#playButton');
-     $nameInput = $('#nameInput');
-     $addPlayerForm = $('#addPlayerForm');
-
-     $player1Div = $('#player1Div');
-     $player2Div = $('#player2Div');
-
-     $rock = $('#rock');
-     $paper = $('#paper');
-     $scissors = $('#scissors');
-
-     $rockImg = $('<img>');
-     $rockImg.attr('src', 'assets/images/rock-paper-scissors-rock-icon.png')
-     $rockImg.attr('id', 'rockImg')
-
-     $paperImg = $('<img>');
-     $paperImg.attr('src', 'assets/images/rock-paper-scissors-paper-icon.png')
-     $paperImg.attr('id', 'paperImg')
-
-     $scissorsImg = $('<img>');
-     $scissorsImg.attr('src', 'assets/images/rock-paper-scissors-scissors-icon.png')
-     $scissorsImg.attr('id', 'scissorsImg')
-
-
      // Play Game Button
-     $playButton.on('click', function(){
+    $playButton.on('click', function(){
 
         gameStarted = true;
 
@@ -273,6 +284,7 @@ function playGame(){
         $addPlayerForm.hide();
         // set name to value in field
         var name = $nameInput.val().trim();
+        playerName = name;
 
         // if player1 and 2 both exist, do nothing
         if (player1Name && player2Name){
@@ -314,7 +326,26 @@ function playGame(){
         return false;
     });
 
+    // Chat
+    database.ref('/chat').on('child_added', function(snapshot){
 
+        $chatDisplay.append('<br>' + snapshot.val().message);
+
+    })
+
+    // Chat Submit
+    $chatButton.on('click', function(){
+
+        var input = $chatInput.val().trim();
+
+        var message = playerName + ': ' + input
+
+        database.ref('/chat').push({
+
+            message: message
+        });
+
+    })
 
 
  }); // end of jQuery

@@ -17,14 +17,19 @@
     <title>RPS - Multiplayer</title>
 </head>
 <body>
+	<nav class="navbar navbar-default">
+		<div class="container-fluid">
+			<div class="navbar-header">
+
+				<p class="navbar-brand"><span class=''> </span> RPS </p>
+			</div>
+		</div>
+	</nav>
+
 	<div class='container'>
 		<div class='row'>
 			<div class='col-md-8' id='gameCol'>
-				<div id='addPlayerForm' class='input-group'>
-					<span class='input-group-addon' id='name-addon'>Name: </span>
-					<input type='text' id='nameInput' class='form-control' placeholder='HandMaster'aria-describedby='name-addon' />
-				</div>
-				<button id='playButton' class='btn btn-default' type='button'> Play!</button>
+
 				<div class='row text-center'>
 					<div class='col-md-5 text-center' id='player1Div'>
 
@@ -43,11 +48,24 @@
 						<button id='scissors' ><img src='assets/images/rock-paper-scissors-scissors-icon.png' /></button>
 					</div>
 				</div>
+				
+				<div id='addPlayerForm' class='input-group'>
+					<span class='input-group-addon' id='name-addon'>Name: </span>
+					<input type='text' id='nameInput' class='form-control' aria-describedby='name-addon' />
+				</div>
+				<button id='playButton' class='btn btn-default' type='button'> Play!</button>
 
 			</div>
-			<div class='col-md-4' id ='chatCol'>Chat goes here
+			<div class='col-md-4' id ='chatCol'>
+				<div id='chatDisplay'>
 
+				</div>
+				<input type='text' id='chatInput' class='form-control'/>
+
+				<button id='chatButton' class='btn btn-default' type='button'> Chat!</button>
 			</div>
+
+
 		</div>
 	</div>
 
