@@ -70,10 +70,14 @@ $(document).ready(function(){
     var player1 = newPlayer;
     var player2 = newPlayer;
 
+    var userID = 0;
+
+    var player1Exists;
+    var player2Exists;
+
     console.log(player1)
 
     var turns = 0;
-    var userID = 0;
 
     // Database Snapshots ////////////////////////////////////////////
 
@@ -83,37 +87,17 @@ $(document).ready(function(){
 
     // set player names to 'waiting for player' until players are added
 
-    database.ref('/players/1/joinState').once('value').then(function(snapshot){
-    
-            player1joinState = snapshot.val();
+    database.ref().once("value").then( function(snapshot) {
+          player1Exists = snapshot.hasChild("/players/1");
+     
+          player2Exists = snapshot.hasChild("/players/2");
+      
+    }).then(function(snapshot){
 
-            }).then( function() {
+        initialize(snapshot);
 
-                database.ref('/players/2/joinState').once('value').then(function(snapshot){
-                    player2joinState = snapshot.val();
+    })
 
-                    // if player1 and 2 both exist, do nothing
-                }).then( function() {
-                    if (player1joinState == true && player2joinState == true){
-                        return false;
-
-                    // if player1 exists, add player 2
-                    }else if (player1joinState == true){
-                        userID = 2;
-                        player2Data.set(newPlayer);
-                        
-                    // if neither player exists, add player 1
-                    }else {
-                       console.log('setting data')
-                       console.log(newPlayer)
-                       userID = 1;
-                       player1Data.set(newPlayer);
-                       player2Data.set(newPlayer);
-
-                    }
-                });
-            });
-    
 
     // Player 1 Name Change Listener
     database.ref('/players/1/name').on('value', function(snapshot){
@@ -133,13 +117,6 @@ $(document).ready(function(){
         $player2Name.text(player2.name)
     });
 
-    // database.ref('/players/1/').on('value', function(snapshot) {
-    //     player1 = snapshot.val();
-    // });
-
-    // database.ref('/players/2/').on('value', function(snapshot) {
-    //     player2 = snapshot.val();
-    // });
 
     // Turn State Listeners - Checks if both players have taken turns and then checks if someone one
 
@@ -171,6 +148,95 @@ $(document).ready(function(){
 
 
     // Functions /////////////
+
+    function initialize(snapshot){
+        if (player1Exists && player2Exists) {
+            console.log('both players exist')
+            database.ref('/players/1/joinState').once('value').then(function(snapshot){
+    
+            player1.joinState = snapshot.val();
+            console.log('player 1 joinstate ' + player1.joinState)
+
+            }).then( function() {
+
+                database.ref('/players/2/joinState').once('value').then(function(snapshot){
+                    player2.joinState = snapshot.val();
+                    console.log('player 2 joinstate ' + player2.joinState)
+
+                    // if player1 and 2 both exist, do nothing
+                }).then( function() {
+                    if (player1.joinState == true && player2.joinState == true){
+                        console.log('both players exist.')
+                        return false;
+
+                    // if player1 exists, add player 2
+                    }else if (player1.joinState == true){
+                        console.log('player 1 exists. setting up player 2.')
+                        
+                        player2Data.set({
+                            name: "Waiting for player",
+                            wins: 0,
+                            losses: 0,
+                            choice: 'undefined',
+                            joinState: false,
+                            turnState: false
+                        });
+
+                    // if player 2 exists, add player 1
+                    }else if (player2.joinState == true){
+                        console.log('player 2 exists. setting up player 1.')
+                        
+                        player1Data.set({
+                            name: "Waiting for player",
+                            wins: 0,
+                            losses: 0,
+                            choice: 'undefined',
+                            joinState: false,
+                            turnState: false
+                        })
+                        
+                    // if neither player exists, add player 1
+                    }else {
+                       console.log('setting data')
+                       console.log(newPlayer)
+                       
+
+                       player1Data.set({
+                            name: "Waiting for player",
+                            wins: 0,
+                            losses: 0,
+                            choice: 'undefined',
+                            joinState: false,
+                            turnState: false
+                       });
+
+                       player2Data.set({
+                            name: "Waiting for player",
+                            wins: 0,
+                            losses: 0,
+                            choice: 'undefined',
+                            joinState: false,
+                            turnState: false
+                       });
+
+                    }
+                });
+            });
+        }else if (player1Exists) {
+            console.log('player 1 exists')
+        
+            player2Data.set(newPlayer);
+        }else if (player2Exists) {
+            console.log('player 2 exists')
+            
+            player1Data.set(newPlayer);
+        }else {
+            console.log('no one exists')
+            
+            player1Data.set(newPlayer);
+            player2Data.set(newPlayer);
+        }
+    }
 
     function displayChoice(player, choice){
 
@@ -310,6 +376,9 @@ $(document).ready(function(){
     function playGame(){
         // hide player divs so they can't see other player's choice
 
+        console.log('playing game');
+        console.log(userID);
+
         $player1Choice.hide();
         $player2Choice.hide();
 
@@ -355,11 +424,20 @@ $(document).ready(function(){
 
 
         // On Player Disconnect - remove that player's data
-        database.ref('/players/').child(userID).onDisconnect().set(newPlayer);
-    }
+        database.ref('/players/').child(userID).onDisconnect().update({
+            name: "Waiting for player",
+            wins: 0,
+            losses: 0,
+            choice: 'undefined',
+            joinState: false,
+            turnState: false
+        })
+
+    };
 
      // Play Game Button
-    $playButton.on('click', function(){
+
+    $playButton.on('click', function() {
 
         $playButton.hide();
         $addPlayerForm.hide();
@@ -369,9 +447,6 @@ $(document).ready(function(){
         playerName = name;
 
         // check if players have joined the game via database
-
-        var player1joinState;
-        var player2joinState;
         
         database.ref('/players/1/joinState').once('value').then(function(snapshot){
     
@@ -387,7 +462,7 @@ $(document).ready(function(){
                     console.log('in last function. player 1 ' + player1joinState + ' ' + player2joinState)
 
                     if (player1joinState == true && player2joinState == true){
-                    return false;
+                        return false;
 
                     // if player1 exists, add player 2
                     }else if (player1joinState == true){
@@ -399,10 +474,6 @@ $(document).ready(function(){
                             joinState: true
                         });
 
-                        // disable add player form and button once players have been selected
-                        // $addPlayerForm.hide();
-                        // $playButton.hide();
-
                     // if neither player exists, add player 1
                     }else {
                         console.log('adding player 1')
@@ -413,16 +484,18 @@ $(document).ready(function(){
                             joinState: true
                         });
                     }
+                }).then( function(){
+                    // reset form field
+                    $nameInput.val("");
+
+                    playGame();
+                    // prevent page refresh
+                    return false;
                 });
             });
         
         
-        // reset form field
-        $nameInput.val("");
-
-        playGame();
-        // prevent page refresh
-        return false;
+        
     });
 
 
