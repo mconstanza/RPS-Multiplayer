@@ -118,33 +118,7 @@ $(document).ready(function(){
     });
 
 
-    // Turn State Listeners - Checks if both players have taken turns and then checks if someone one
 
-    database.ref('/players/1/turnState').on('value', function(snapshot){
-
-        var player1TurnState = snapshot.val();
-
-        var player2TurnState = database.ref('/players/2/turnState').once('value', function(snapshot){
-            return snapshot.val();
-        });
-
-        if (player1TurnState == true && player2TurnState == true) {
-            winCheck();
-        }
-    });
-
-     database.ref('/players/2/turnState').on('value', function(snapshot){
-
-        var player2TurnState = snapshot.val();
-
-        var player1TurnState = database.ref('/players/1/turnState').once('value', function(snapshot){
-            return snapshot.val();
-        });
-
-        if (player1TurnState == true && player2TurnState == true) {
-            winCheck();
-        }
-    });
 
 
     // Functions /////////////
@@ -289,89 +263,137 @@ $(document).ready(function(){
     };
 
     function winCheck(){
-        // rock
-        if (player1.choice == 0){
-            switch (player2.choice){
-                case 0:
-                    // tie game
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    console.log('Tie Game!')
-                    //variableReset();
-                    break;
-                case 1:
-                    // player 2 wins
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    player2Data.child('wins').transaction(function(wins){
-                        return wins + 1;
-                    })
-                    player1Data.child('losses').transaction(function(losses){
-                        return losses + 1;
-                    })
-                    console.log('player 2 wins!')
-                    //variableReset();
-                    break;
-                case 2:
-                    // player 1 wins
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    console.log('player 1 wins!')
-                    //variableReset();
-                    break;
-            };
-        // paper
-        }else if (player1Choice == 1){
-                switch (player2Choice){
+        // confirm current player choices from database
+
+        database.ref('/players/1/choice').once('value').then(function(snapshot){
+
+            player1.choice = snapshot.val();
+
+        }).then(function(){
+            database.ref('/players/2/choice').once('value').then(function(snapshot) {
+
+                player2.choice = snapshot.val();
+            })
+        }).then( function() {
+            // rock
+            if (player1.choice == 0){
+                switch (player2.choice){
                     case 0:
-                        // player 1 wins
-                        $player1Choice.show();
-                        $player2Choice.show();
-                        console.log('player 1 wins!')
-                        //variableReset();
-                        break;
-                    case 1:
                         // tie game
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('Tie Game!')
                         //variableReset();
                         break;
+                    case 1:
+                        // player 2 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        player2Data.child('wins').transaction(function(wins){
+                            return wins + 1;
+                        })
+                        player1Data.child('losses').transaction(function(losses){
+                            return losses + 1;
+                        })
+                        console.log('player 2 wins!')
+                        //variableReset();
+                        break;
                     case 2:
+                        // player 1 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('player 1 wins!')
+                        //variableReset();
+                        break;
+                };
+            // paper
+            }else if (player1Choice == 1){
+                    switch (player2Choice){
+                        case 0:
+                            // player 1 wins
+                            $player1Choice.show();
+                            $player2Choice.show();
+                            console.log('player 1 wins!')
+                            //variableReset();
+                            break;
+                        case 1:
+                            // tie game
+                            $player1Choice.show();
+                            $player2Choice.show();
+                            console.log('Tie Game!')
+                            //variableReset();
+                            break;
+                        case 2:
+                            // player 2 wins
+                            $player1Choice.show();
+                            $player2Choice.show();
+                            console.log('player 2 wins!')
+                            //variableReset();
+                        break;
+                    }
+            // scissors
+            }else if (player1Choice == 2){
+                switch (player2Choice){
+                    case 0:
                         // player 2 wins
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('player 2 wins!')
                         //variableReset();
-                    break;
+                        break;
+                    case 1:
+                        // player 1 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('player 1 wins!')
+                        //variableReset();
+                        break;
+                    case 2:
+                        // tie game
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('Tie Game!')
+                        //variableReset();
+                        break;
                 }
-        // scissors
-        }else if (player1Choice == 2){
-            switch (player2Choice){
-                case 0:
-                    // player 2 wins
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    console.log('player 2 wins!')
-                    //variableReset();
-                    break;
-                case 1:
-                    // player 1 wins
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    console.log('player 1 wins!')
-                    //variableReset();
-                    break;
-                case 2:
-                    // tie game
-                    $player1Choice.show();
-                    $player2Choice.show();
-                    console.log('Tie Game!')
-                    //variableReset();
-                    break;
             }
-        }
+        })    
     };
+
+    function checkTurnStates(){
+
+        database.ref('/players/1/turnState').once('value').then(function(snapshot){
+
+            player1.turnState = snapshot.val();
+
+        }).then(function(snapshot){
+            database.ref('/players/2/turnState').once('value', function(snapshot){
+                player2.turnState = snapshot.val();
+
+        }).then(function(){
+            if (player1.turnState == true && player1.turnState == true) {
+                return true;
+            }
+            })
+        });
+
+        database.ref('/players/2/turnState').once('value').then(function(snapshot){
+
+            player2.turnState = snapshot.val();
+
+        }).then(function(snapshot){
+            database.ref('/players/1/turnState').once('value', function(snapshot){
+                player1.turnState = snapshot.val();
+
+        }).then(function(){
+            if (player1.turnState == true && player1.turnState == true) {
+                return true;
+            }
+            })
+        });
+        return false
+    }
+
 
     function playGame(){
         // hide player divs so they can't see other player's choice
@@ -382,31 +404,48 @@ $(document).ready(function(){
         $player1Choice.hide();
         $player2Choice.hide();
 
+        // Turn State Listeners - Checks if both players have taken turns and then checks if someone won
+
+        
+
         // Rock, paper, scissors buttons
 
         $rock.on('click', function(){
             database.ref('/players').child(userID).update({
-                choice: 0
+                choice: 0,
+                turnState: true
             });
+
+            if (checkTurnStates) {
+                winCheck();
+            }
         });
 
         $paper.on('click', function(){
             database.ref('/players').child(userID).update({
-                choice: 1
+                choice: 1,
+                turnState: true
             });
+            if (checkTurnStates) {
+                winCheck();
+            }
         });
 
         $scissors.on('click', function(){
             database.ref('/players').child(userID).update({
-                choice: 2
+                choice: 2,
+                turnState: true
             });
+            if (checkTurnStates) {
+                winCheck();
+            }
         });
 
 
         // listen for changes to player choices
         database.ref('/players/1/choice').on('value', function(snapshot){
-            player1Choice = snapshot.val();
-            displayChoice('player1', player1Choice);
+            player1.choice = snapshot.val();
+            displayChoice('player1', player1.choice);
             if (userID == 1){
                 $player1Choice.show();
             }
@@ -414,8 +453,8 @@ $(document).ready(function(){
         });
 
         database.ref('/players/2/choice').on('value', function(snapshot){
-            player2Choice = snapshot.val();
-            displayChoice('player2', player2Choice);
+            player2.choice = snapshot.val();
+            displayChoice('player2', player2.choice);
             if (userID == 2){
                 $player2Choice.show();
             }
@@ -431,9 +470,9 @@ $(document).ready(function(){
             choice: 'undefined',
             joinState: false,
             turnState: false
-        })
+        });
 
-    };
+    }
 
      // Play Game Button
 
