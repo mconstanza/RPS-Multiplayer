@@ -54,56 +54,120 @@ $(document).ready(function(){
 
     var database = firebase.database();
 
-    var players;
-    var playerName;
-    var player1Name;
-    var player2Name;
-    var gameStarted = false;
-    var player1Choice;
-    var player2Choice;
-    var wins = 0;
+    // Player Objects
+
+    var newPlayer = {
+        name: "Waiting for player",
+        wins: 0,
+        losses: 0,
+        choice: 'undefined',
+        joinState: false,
+        turnState: false
+    };
+
+    console.log(newPlayer)
+
+    var player1 = newPlayer;
+    var player2 = newPlayer;
+
+    console.log(player1)
+
     var turns = 0;
-    var userID =0;
+    var userID = 0;
 
     // Database Snapshots ////////////////////////////////////////////
 
     var player1Data = database.ref('/players/1');
     var player2Data = database.ref('/players/2');
 
-    player1Data.set({
-        name: 'Waiting for player'
-    });
 
-    player2Data.set({
-        name: 'Waiting for player'
-    });
+    // set player names to 'waiting for player' until players are added
 
-    // Player 1 Name Changes
+    database.ref('/players/1/joinState').once('value').then(function(snapshot){
+    
+            player1joinState = snapshot.val();
+
+            }).then( function() {
+
+                database.ref('/players/2/joinState').once('value').then(function(snapshot){
+                    player2joinState = snapshot.val();
+
+                    // if player1 and 2 both exist, do nothing
+                }).then( function() {
+                    if (player1joinState == true && player2joinState == true){
+                        return false;
+
+                    // if player1 exists, add player 2
+                    }else if (player1joinState == true){
+                        userID = 2;
+                        player2Data.set(newPlayer);
+                        
+                    // if neither player exists, add player 1
+                    }else {
+                       console.log('setting data')
+                       console.log(newPlayer)
+                       userID = 1;
+                       player1Data.set(newPlayer);
+                       player2Data.set(newPlayer);
+
+                    }
+                });
+            });
+    
+
+    // Player 1 Name Change Listener
     database.ref('/players/1/name').on('value', function(snapshot){
 
-        player1Name = snapshot.val();
-        console.log(player1Name);
+        player1.name = snapshot.val();
 
         // write to player1Info div
-        $player1Name.text(player1Name)
+        $player1Name.text(player1.name)
     });
 
-    // Player 2 Name Changes
+    // Player 2 Name Change Listener
     database.ref('/players/2/name').on('value', function(snapshot){
 
-        player2Name = snapshot.val();
-        console.log(player2Name);
+        player2.name = snapshot.val();
 
         // write to player2Info div
-        $player2Name.text(player2Name)
+        $player2Name.text(player2.name)
     });
 
-    // disconnect
-    database.ref('/players').child(userID).onDisconnect().set({
-        name: 'Waiting for player'
+    // database.ref('/players/1/').on('value', function(snapshot) {
+    //     player1 = snapshot.val();
+    // });
+
+    // database.ref('/players/2/').on('value', function(snapshot) {
+    //     player2 = snapshot.val();
+    // });
+
+    // Turn State Listeners - Checks if both players have taken turns and then checks if someone one
+
+    database.ref('/players/1/turnState').on('value', function(snapshot){
+
+        var player1TurnState = snapshot.val();
+
+        var player2TurnState = database.ref('/players/2/turnState').once('value', function(snapshot){
+            return snapshot.val();
+        });
+
+        if (player1TurnState == true && player2TurnState == true) {
+            winCheck();
+        }
     });
 
-     // Game Variables ///////////////////////////////////////////////////
+     database.ref('/players/2/turnState').on('value', function(snapshot){
+
+        var player2TurnState = snapshot.val();
+
+        var player1TurnState = database.ref('/players/1/turnState').once('value', function(snapshot){
+            return snapshot.val();
+        });
+
+        if (player1TurnState == true && player2TurnState == true) {
+            winCheck();
+        }
+    });
 
 
     // Functions /////////////
@@ -160,8 +224,8 @@ $(document).ready(function(){
 
     function winCheck(){
         // rock
-        if (player1Choice == 0){
-            switch (player2Choice){
+        if (player1.choice == 0){
+            switch (player2.choice){
                 case 0:
                     // tie game
                     $player1Choice.show();
@@ -173,6 +237,12 @@ $(document).ready(function(){
                     // player 2 wins
                     $player1Choice.show();
                     $player2Choice.show();
+                    player2Data.child('wins').transaction(function(wins){
+                        return wins + 1;
+                    })
+                    player1Data.child('losses').transaction(function(losses){
+                        return losses + 1;
+                    })
                     console.log('player 2 wins!')
                     //variableReset();
                     break;
@@ -235,7 +305,6 @@ $(document).ready(function(){
                     break;
             }
         }
-
     };
 
     function playGame(){
@@ -250,26 +319,18 @@ $(document).ready(function(){
             database.ref('/players').child(userID).update({
                 choice: 0
             });
-            console.log('Rock!')
-            console.log('player ' + userID + ' choice: rock')
-
-
         });
 
         $paper.on('click', function(){
             database.ref('/players').child(userID).update({
                 choice: 1
             });
-            console.log(player1Choice)
-
-
         });
 
         $scissors.on('click', function(){
             database.ref('/players').child(userID).update({
                 choice: 2
             });
-
         });
 
 
@@ -280,7 +341,7 @@ $(document).ready(function(){
             if (userID == 1){
                 $player1Choice.show();
             }
-            winCheck()
+           
         });
 
         database.ref('/players/2/choice').on('value', function(snapshot){
@@ -289,58 +350,73 @@ $(document).ready(function(){
             if (userID == 2){
                 $player2Choice.show();
             }
-            winCheck()
+          
         });
 
 
         // On Player Disconnect - remove that player's data
-        database.ref('/players').child(userID).onDisconnect().remove();
-
+        database.ref('/players/').child(userID).onDisconnect().set(newPlayer);
     }
 
      // Play Game Button
     $playButton.on('click', function(){
 
-        gameStarted = true;
-
         $playButton.hide();
         $addPlayerForm.hide();
+
         // set name to value in field
         var name = $nameInput.val().trim();
         playerName = name;
 
-        // if player1 and 2 both exist, do nothing
-        if (player1Name != 'Waiting for player' && player2Name != 'Waiting for player'){
-            return false;
+        // check if players have joined the game via database
 
-        // if player1 exists, add player 2
-    }else if (player1Name != 'Waiting for player'){
-            console.log('adding player 2')
-            userID = 2;
-            console.log('user: ' + userID)
-            database.ref('/players/2').update({
-                name: name,
-                user: userID,
-                wins: 0,
-                losses: 0
+        var player1joinState;
+        var player2joinState;
+        
+        database.ref('/players/1/joinState').once('value').then(function(snapshot){
+    
+            player1joinState = snapshot.val();
+
+            }).then( function() {
+
+                database.ref('/players/2/joinState').once('value').then(function(snapshot){
+                    player2joinState = snapshot.val();
+
+                    // if player1 and 2 both exist, do nothing
+                }).then( function() {
+                    console.log('in last function. player 1 ' + player1joinState + ' ' + player2joinState)
+
+                    if (player1joinState == true && player2joinState == true){
+                    return false;
+
+                    // if player1 exists, add player 2
+                    }else if (player1joinState == true){
+                        console.log('adding player 2')
+                        userID = 2;
+                        console.log('user: ' + userID)
+                        database.ref('/players/2').update({
+                            name: playerName,
+                            joinState: true
+                        });
+
+                        // disable add player form and button once players have been selected
+                        // $addPlayerForm.hide();
+                        // $playButton.hide();
+
+                    // if neither player exists, add player 1
+                    }else {
+                        console.log('adding player 1')
+                        userID = 1;
+                        console.log('user: ' + userID)
+                        database.ref('/players/1').update({
+                            name: playerName,
+                            joinState: true
+                        });
+                    }
+                });
             });
-
-            // disable add player form and button once players have been selected
-            // $addPlayerForm.hide();
-            // $playButton.hide();
-
-        // if neither player exists, add player 1
-        }else {
-            console.log('adding player 1')
-            userID = 1;
-            console.log('user: ' + userID)
-            database.ref('/players/1').update({
-                name: name,
-                user: userID,
-                wins: 0,
-                losses: 0
-            });
-        }
+        
+        
         // reset form field
         $nameInput.val("");
 
@@ -348,6 +424,7 @@ $(document).ready(function(){
         // prevent page refresh
         return false;
     });
+
 
     // Chat
     database.ref('/players/1/chat').on('child_added', function(snapshot){
