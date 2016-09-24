@@ -65,8 +65,6 @@ $(document).ready(function(){
         turnState: false
     };
 
-    console.log(newPlayer)
-
     var player1 = newPlayer;
     var player2 = newPlayer;
 
@@ -74,8 +72,6 @@ $(document).ready(function(){
 
     var player1Exists;
     var player2Exists;
-
-    console.log(player1)
 
     var turns = 0;
 
@@ -172,7 +168,6 @@ $(document).ready(function(){
                     // if neither player exists, add player 1
                     }else {
                        console.log('setting data')
-                       console.log(newPlayer)
                        
 
                        player1Data.set({
@@ -268,96 +263,106 @@ $(document).ready(function(){
         database.ref('/players/1/choice').once('value').then(function(snapshot){
 
             player1.choice = snapshot.val();
+            console.log('player 1 choice before last function in wincheck ' + player1.choice)
+            
 
         }).then(function(){
             database.ref('/players/2/choice').once('value').then(function(snapshot) {
 
                 player2.choice = snapshot.val();
-            })
-        }).then( function() {
-            // rock
-            if (player1.choice == 0){
-                switch (player2.choice){
-                    case 0:
+                console.log('player 2 choice before last function in wincheck ' + player2.choice)
+                
+        
+            }).then( function() {
+                console.log('made it to last part of winCheck')
+                console.log(player1.choice)
+                console.log(player2.choice)
+                // rock
+                if (player1.choice == 0){
+                    console.log('player 1 chose rock')
+                    if (player2.choice == 0){
                         // tie game
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('Tie Game!')
                         //variableReset();
-                        break;
-                    case 1:
+                    }else if (player2.choice == 1){
+
+                        console.log('player 2 chose paper. Player 2 wins.')
                         // player 2 wins
                         $player1Choice.show();
                         $player2Choice.show();
                         player2Data.child('wins').transaction(function(wins){
                             return wins + 1;
-                        })
+                            })
                         player1Data.child('losses').transaction(function(losses){
                             return losses + 1;
-                        })
+                            })
                         console.log('player 2 wins!')
                         //variableReset();
-                        break;
-                    case 2:
+                
+                    } else if (player2.choice == 2) {
                         // player 1 wins
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('player 1 wins!')
                         //variableReset();
-                        break;
-                };
-            // paper
-            }else if (player1Choice == 1){
-                    switch (player2Choice){
-                        case 0:
-                            // player 1 wins
-                            $player1Choice.show();
-                            $player2Choice.show();
-                            console.log('player 1 wins!')
-                            //variableReset();
-                            break;
-                        case 1:
-                            // tie game
-                            $player1Choice.show();
-                            $player2Choice.show();
-                            console.log('Tie Game!')
-                            //variableReset();
-                            break;
-                        case 2:
-                            // player 2 wins
-                            $player1Choice.show();
-                            $player2Choice.show();
-                            console.log('player 2 wins!')
-                            //variableReset();
-                        break;
                     }
-            // scissors
-            }else if (player1Choice == 2){
-                switch (player2Choice){
-                    case 0:
-                        // player 2 wins
-                        $player1Choice.show();
-                        $player2Choice.show();
-                        console.log('player 2 wins!')
-                        //variableReset();
-                        break;
-                    case 1:
+
+                // paper
+                }else if (player1.choice == 1){
+                    console.log('player 1 chose paper')
+                    if (player2.choice == 0){
+                    
                         // player 1 wins
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('player 1 wins!')
                         //variableReset();
-                        break;
-                    case 2:
+                        
+                    }else if (player2.choice == 1){
                         // tie game
                         $player1Choice.show();
                         $player2Choice.show();
                         console.log('Tie Game!')
                         //variableReset();
-                        break;
+                        
+                    }else if (player2.choice == 2) {
+                        // player 2 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('player 2 wins!')
+                        //variableReset();
+                    }
+                // scissors
+                }else if (player1.choice == 2){
+                    console.log('player 1 chose scissors')
+                    if (player2.choice == 0){
+                        // player 2 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('player 2 wins!')
+                        //variableReset();
+
+                    } else if (player2.choice == 1) {
+                        // player 1 wins
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('player 1 wins!')
+                        //variableReset();
+                        
+                    } else if (player2.choice == 2) {
+
+                        // tie game
+                        $player1Choice.show();
+                        $player2Choice.show();
+                        console.log('Tie Game!')
+                        //variableReset();
+
+                    }
                 }
-            }
-        })    
+            })
+        })   
     };
 
     function checkTurnStates(){
@@ -366,101 +371,90 @@ $(document).ready(function(){
 
             player1.turnState = snapshot.val();
 
-        }).then(function(snapshot){
-            database.ref('/players/2/turnState').once('value', function(snapshot){
+        }).then(function(){
+            database.ref('/players/2/turnState').once('value').then(function(snapshot){
                 player2.turnState = snapshot.val();
 
-        }).then(function(){
-            if (player1.turnState == true && player1.turnState == true) {
-                return true;
-            }
+            }).then(function(){
+                console.log('player 1, player 2 turn states ' + player1.turnState + ' ' + player2.turnState)
+                if (player1.turnState == true && player2.turnState == true) {
+                    console.log('turn states true')
+                    winCheck();
+                }           
             })
-        });
-
-        database.ref('/players/2/turnState').once('value').then(function(snapshot){
-
-            player2.turnState = snapshot.val();
-
-        }).then(function(snapshot){
-            database.ref('/players/1/turnState').once('value', function(snapshot){
-                player1.turnState = snapshot.val();
-
-        }).then(function(){
-            if (player1.turnState == true && player1.turnState == true) {
-                return true;
-            }
-            })
-        });
+        })
+        console.log('turn states false')
         return false
-    }
+    };
+
 
 
     function playGame(){
         // hide player divs so they can't see other player's choice
 
-        console.log('playing game');
-        console.log(userID);
-
         $player1Choice.hide();
         $player2Choice.hide();
 
         // Turn State Listeners - Checks if both players have taken turns and then checks if someone won
+        database.ref('/players/1/choice').on('value', function(snapshot){
 
+            player1.choice = snapshot.val();
+
+            displayChoice('player1', player1.choice);
+            if (userID == 1){
+                $player1Choice.show();
+            }
+
+            checkTurnStates();
+        });
+
+        database.ref('/players/2/choice').on('value', function(snapshot){
+            player2.choice = snapshot.val();
+
+            displayChoice('player2', player2.choice);
+
+            if (userID == 2){
+                $player2Choice.show();
+            }
+            checkTurnStates();
+        });
         
 
         // Rock, paper, scissors buttons
 
         $rock.on('click', function(){
-            database.ref('/players').child(userID).update({
+            console.log('user id when choosing ' + userID)
+            database.ref('/players/').child(userID).update({
                 choice: 0,
                 turnState: true
             });
 
-            if (checkTurnStates) {
-                winCheck();
-            }
+            // if (checkTurnStates) {
+            //     winCheck();
+            // }
         });
 
         $paper.on('click', function(){
-            database.ref('/players').child(userID).update({
+            console.log('user id when choosing ' + userID)
+            database.ref('/players/').child(userID).update({
                 choice: 1,
                 turnState: true
             });
-            if (checkTurnStates) {
-                winCheck();
-            }
+            // if (checkTurnStates) {
+            //     winCheck();
+            // }
         });
 
         $scissors.on('click', function(){
-            database.ref('/players').child(userID).update({
+            console.log('user id when choosing ' + userID)
+            database.ref('/players/').child(userID).update({
                 choice: 2,
                 turnState: true
             });
-            if (checkTurnStates) {
-                winCheck();
-            }
+            // if (checkTurnStates) {
+            //     winCheck();
+            // }
         });
-
-
-        // listen for changes to player choices
-        database.ref('/players/1/choice').on('value', function(snapshot){
-            player1.choice = snapshot.val();
-            displayChoice('player1', player1.choice);
-            if (userID == 1){
-                $player1Choice.show();
-            }
-           
-        });
-
-        database.ref('/players/2/choice').on('value', function(snapshot){
-            player2.choice = snapshot.val();
-            displayChoice('player2', player2.choice);
-            if (userID == 2){
-                $player2Choice.show();
-            }
-          
-        });
-
 
         // On Player Disconnect - remove that player's data
         database.ref('/players/').child(userID).onDisconnect().update({
@@ -505,9 +499,9 @@ $(document).ready(function(){
 
                     // if player1 exists, add player 2
                     }else if (player1joinState == true){
-                        console.log('adding player 2')
+                   
                         userID = 2;
-                        console.log('user: ' + userID)
+                
                         database.ref('/players/2').update({
                             name: playerName,
                             joinState: true
@@ -515,9 +509,9 @@ $(document).ready(function(){
 
                     // if neither player exists, add player 1
                     }else {
-                        console.log('adding player 1')
+                      
                         userID = 1;
-                        console.log('user: ' + userID)
+                        
                         database.ref('/players/1').update({
                             name: playerName,
                             joinState: true
@@ -532,7 +526,6 @@ $(document).ready(function(){
                     return false;
                 });
             });
-        
         
         
     });
